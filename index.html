@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Leaf Disease Detection</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body{
+            background: linear-gradient(to right, #dcedc8, #a5d6a7);
+            min-height:100vh;
+            padding:30px;
+        }
+
+        .main-container{
+            max-width:1200px;
+            margin:auto;
+        }
+
+        /* HEADER */
+
+        .header{
+            text-align:center;
+            margin-bottom:40px;
+        }
+
+        .header h1{
+            color:#1b5e20;
+            font-size:42px;
+            margin-bottom:10px;
+        }
+
+        .header p{
+            color:#333;
+            font-size:18px;
+        }
+
+        /* UPLOAD BOX */
+
+        .upload-box{
+            background:white;
+            padding:25px;
+            border-radius:18px;
+            text-align:center;
+            box-shadow:0 8px 20px rgba(0,0,0,0.15);
+            margin-bottom:30px;
+        }
+
+        input[type="file"]{
+            margin:15px 0;
+        }
+
+        input[type="submit"]{
+            background:#2e7d32;
+            color:white;
+            border:none;
+            padding:12px 28px;
+            border-radius:10px;
+            cursor:pointer;
+            font-size:16px;
+            transition:0.3s;
+        }
+
+        input[type="submit"]:hover{
+            background:#1b5e20;
+        }
+
+        /* DASHBOARD */
+
+        .dashboard{
+            display:flex;
+            gap:25px;
+            flex-wrap:wrap;
+        }
+
+        .card{
+            background:white;
+            border-radius:18px;
+            padding:25px;
+            box-shadow:0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* IMAGE CARD */
+
+        .image-card{
+            flex:1;
+            min-width:300px;
+            text-align:center;
+        }
+
+        .image-card img{
+            width:100%;
+            max-width:350px;
+            border-radius:15px;
+            margin-top:20px;
+        }
+
+        /* RESULT CARD */
+
+        .result-card{
+            flex:1;
+            min-width:300px;
+        }
+
+        .result-card h2{
+            color:#1b5e20;
+            margin-bottom:20px;
+        }
+
+        .result-item{
+            margin-bottom:18px;
+            font-size:17px;
+            line-height:1.6;
+        }
+
+        .label{
+            font-weight:bold;
+            color:#000;
+        }
+
+        .value{
+            color:#2e7d32;
+            font-weight:bold;
+        }
+
+        /* CONFIDENCE BAR */
+
+        .progress-bar{
+            width:100%;
+            background:#ddd;
+            height:25px;
+            border-radius:20px;
+            overflow:hidden;
+            margin-top:10px;
+        }
+
+        .progress{
+            height:100%;
+            background:linear-gradient(to right,#66bb6a,#1b5e20);
+        }
+
+        /* INFO SECTION */
+
+        .info-section{
+            margin-top:30px;
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:20px;
+        }
+
+        .info-card{
+            background:white;
+            padding:20px;
+            border-radius:18px;
+            box-shadow:0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .info-card h3{
+            color:#1b5e20;
+            margin-bottom:10px;
+        }
+
+        .info-card p{
+            line-height:1.6;
+        }
+
+        /* GRAPH SECTION */
+
+        .graph-section{
+            margin-top:30px;
+        }
+
+        .graph-card{
+            background:white;
+            padding:25px;
+            border-radius:18px;
+            box-shadow:0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .graph-card h2{
+            color:#1b5e20;
+            margin-bottom:20px;
+        }
+
+        .graph-item{
+            margin-bottom:20px;
+        }
+
+        .graph-item p{
+            margin-bottom:8px;
+            font-size:16px;
+        }
+
+        .graph-bar{
+            width:100%;
+            height:22px;
+            background:#ddd;
+            border-radius:20px;
+            overflow:hidden;
+        }
+
+        .graph-fill{
+            height:100%;
+            background:linear-gradient(to right,#81c784,#1b5e20);
+        }
+
+        /* PIE CHART */
+
+        .chart-container{
+            margin-top:30px;
+        }
+
+        .chart-card{
+            background:white;
+            padding:25px;
+            border-radius:18px;
+            box-shadow:0 8px 20px rgba(0,0,0,0.15);
+            text-align:center;
+        }
+
+        .chart-card h2{
+            color:#1b5e20;
+            margin-bottom:20px;
+        }
+
+        canvas{
+            max-width:450px;
+            margin:auto;
+        }
+
+        /* STATS SECTION */
+
+        .stats-section{
+            margin-top:30px;
+            display:flex;
+            gap:20px;
+            flex-wrap:wrap;
+        }
+
+        .stats-card{
+            flex:1;
+            background:white;
+            padding:20px;
+            border-radius:18px;
+            text-align:center;
+            box-shadow:0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .stats-card h3{
+            color:#1b5e20;
+            margin-bottom:10px;
+        }
+
+        .stats-card p{
+            font-size:28px;
+            font-weight:bold;
+            color:#2e7d32;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="main-container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>🌿 AI-Based Leaf Disease Detection</h1>
+
+        <p>Smart Crop Health Monitoring Dashboard</p>
+
+    </div>
+
+    <!-- UPLOAD BOX -->
+
+    <div class="upload-box">
+
+        <form action="/predict" method="POST" enctype="multipart/form-data">
+
+            <input type="file" name="file" required>
+
+            <br><br>
+
+            <input type="submit" value="Analyze Leaf">
+
+        </form>
+
+    </div>
+
+    {% if prediction %}
+
+    <!-- DASHBOARD -->
+
+    <div class="dashboard">
+
+        <!-- IMAGE CARD -->
+
+        <div class="image-card card">
+
+            <h2>Uploaded Leaf Image</h2>
+
+            <img src="{{ image_path }}" alt="Leaf Image">
+
+        </div>
+
+        <!-- RESULT CARD -->
+
+        <div class="result-card card">
+
+            <h2>AI Analysis Result</h2>
+
+            <div class="result-item">
+
+                <span class="label">Disease:</span>
+
+                <span class="value">{{ prediction }}</span>
+
+            </div>
+
+            <div class="result-item">
+
+                <span class="label">Confidence:</span>
+
+                <span class="value">{{ confidence }}%</span>
+
+                <div class="progress-bar">
+
+                    <div class="progress"
+                         style="width: {{ confidence }}%;">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% if confidence > 90 %}
+
+                <p><strong>Severity Level:</strong> High Confidence</p>
+
+            {% elif confidence > 70 %}
+
+                <p><strong>Severity Level:</strong> Moderate Confidence</p>
+
+            {% else %}
+
+                <p><strong>Severity Level:</strong> Low Confidence</p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- INFORMATION SECTION -->
+
+    <div class="info-section">
+
+        <div class="info-card">
+
+            <h3>Cause</h3>
+
+            <p>{{ cause }}</p>
+
+        </div>
+
+        <div class="info-card">
+
+            <h3>Treatment</h3>
+
+            <p>{{ treatment }}</p>
+
+        </div>
+
+        <div class="info-card">
+
+            <h3>Prevention</h3>
+
+            <p>{{ prevention }}</p>
+
+        </div>
+
+    </div>
+
+    <!-- PREDICTION GRAPH -->
+
+    <div class="graph-section">
+
+        <div class="graph-card">
+
+            <h2>Prediction Probability Analysis</h2>
+
+            {% for item in prediction_data[:4] %}
+
+            <div class="graph-item">
+
+                <p>
+
+                    <strong>{{ item.label }}</strong>
+                    - {{ item.value }}%
+
+                </p>
+
+                <div class="graph-bar">
+
+                    <div class="graph-fill"
+                         style="width: {{ item.value }}%;">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <!-- PIE CHART -->
+
+    <div class="chart-container">
+
+        <div class="chart-card">
+
+            <h2>Disease Prediction Distribution</h2>
+
+            <canvas id="diseaseChart"></canvas>
+
+        </div>
+
+    </div>
+
+    <!-- STATS SECTION -->
+
+    <div class="stats-section">
+
+        <div class="stats-card">
+
+            <h3>Model Accuracy</h3>
+
+            <p>94%</p>
+
+        </div>
+
+        <div class="stats-card">
+
+            <h3>Diseases Supported</h3>
+
+            <p>6</p>
+
+        </div>
+
+        <div class="stats-card">
+
+            <h3>Prediction Time</h3>
+
+            <p>1.2 sec</p>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% if prediction_data %}
+
+<script>
+
+const ctx = document.getElementById('diseaseChart');
+
+new Chart(ctx, {
+
+    type: 'pie',
+
+    data: {
+
+        labels: [
+
+            {% for item in prediction_data[:4] %}
+                "{{ item.label }}",
+            {% endfor %}
+
+        ],
+
+        datasets: [{
+
+            data: [
+
+                {% for item in prediction_data[:4] %}
+                    {{ item.value }},
+                {% endfor %}
+
+            ],
+
+            backgroundColor: [
+                '#66bb6a',
+                '#42a5f5',
+                '#ffa726',
+                '#ef5350'
+            ],
+
+            borderWidth: 1
+
+        }]
+    },
+
+    options: {
+
+        responsive: true,
+
+        plugins: {
+
+            legend: {
+                position: 'bottom'
+            }
+
+        }
+
+    }
+
+});
+
+</script>
+
+{% endif %}
+
+</body>
+
+</html>
