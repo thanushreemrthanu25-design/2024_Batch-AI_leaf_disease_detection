@@ -1,0 +1,1 @@
+# 2024_Batch-AI_leaf_disease_detection
